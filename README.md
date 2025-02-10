@@ -1,8 +1,8 @@
-# 🎮 BDAT GUI Tool
-
 <div align="center">
-
+# 🎮 BDAT GUI Tool
+   
 *A graphical interface for Xenoblade's BDAT file operations*
+
 
 [![Made with Python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 [![Powered by bdat-rs](https://img.shields.io/badge/Powered%20by-bdat--rs-orange.svg)](https://github.com/roccodev/bdat-rs)
@@ -13,8 +13,10 @@
 
 BDAT GUI Tool provides a user-friendly interface for handling Xenoblade's BDAT files, enabling batch extraction and packing operations. This tool serves as a graphical wrapper for the [bdat-rs toolset](https://github.com/roccodev/bdat-rs/blob/master/toolset/README.md).
 
-> 💝 **Special Thanks**  
-> Huge appreciation to [RoccoDev](https://github.com/roccodev) for creating the bdat-rs toolset. This GUI tool stands on the shoulders of their exceptional work with BDAT file handling.
+💝 **Special Thanks**  
+ Huge appreciation to [RoccoDev](https://github.com/roccodev) for creating the bdat-rs toolset. This GUI tool stands on the shoulders of their exceptional work with BDAT file handling.
+
+![Screen](graphics/GUI.jpg)
 
 ## 📋 Requirements
 
