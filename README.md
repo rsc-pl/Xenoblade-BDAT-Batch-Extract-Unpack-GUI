@@ -99,6 +99,4 @@ For now, please follow the "From Source" instructions below.
 
 ---
 
-*Made with ❤️ for the Xenoblade community*
-
 </div>
