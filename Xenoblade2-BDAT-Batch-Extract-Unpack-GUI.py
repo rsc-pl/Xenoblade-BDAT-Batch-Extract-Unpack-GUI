@@ -10,8 +10,16 @@ class BDATApp:
         self.master = master
         master.title("BDAT Conversion Toolset")
 
+        # Notebook for tabbed interface
+        self.notebook = ttk.Notebook(master)
+        self.notebook.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        # --- Batch Processing Frame ---
+        self.batch_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.batch_frame, text="Batch Processing")
+
         # Extract Section
-        self.extract_frame = ttk.LabelFrame(master, text="Extract BDAT to JSON")
+        self.extract_frame = ttk.LabelFrame(self.batch_frame, text="Extract BDAT to JSON")
         self.extract_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
         self.extract_label = ttk.Label(self.extract_frame, text="Path to directory containing BDAT files:")
@@ -44,7 +52,7 @@ class BDATApp:
         self.extract_start_button.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
 
         # Pack Section
-        self.pack_frame = ttk.LabelFrame(master, text="Pack JSON to BDAT")
+        self.pack_frame = ttk.LabelFrame(self.batch_frame, text="Pack JSON to BDAT")
         self.pack_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
         self.pack_label = ttk.Label(self.pack_frame, text="Path to directory containing JSON files:")
@@ -76,15 +84,94 @@ class BDATApp:
         self.pack_start_button = ttk.Button(self.pack_frame, text="Pack", command=self.pack_bdat)
         self.pack_start_button.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
 
+        # --- Single File Processing Frame ---
+        self.single_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.single_frame, text="Single File Processing")
+
+        # Single Extract Section
+        self.single_extract_frame = ttk.LabelFrame(self.single_frame, text="Extract Single BDAT to JSON")
+        self.single_extract_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+
+        self.single_extract_label = ttk.Label(self.single_extract_frame, text="Path to BDAT file:")
+        self.single_extract_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+        self.single_extract_path = tk.StringVar()
+        self.single_extract_entry = ttk.Entry(self.single_extract_frame, textvariable=self.single_extract_path, width=50)
+        self.single_extract_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        self.single_extract_button = ttk.Button(self.single_extract_frame, text="Browse", command=self.browse_single_extract_input)
+        self.single_extract_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+
+        self.single_extract_output_label = ttk.Label(self.single_extract_frame, text="Path to output directory:")
+        self.single_extract_output_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+        self.single_extract_output_path = tk.StringVar()
+        self.single_extract_output_entry = ttk.Entry(self.single_extract_frame, textvariable=self.single_extract_output_path, width=50)
+        self.single_extract_output_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+
+        self.single_extract_output_button = ttk.Button(self.single_extract_frame, text="Browse", command=self.browse_single_extract_output)
+        self.single_extract_output_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+
+        self.single_extract_progress = ttk.Progressbar(self.single_extract_frame, orient="horizontal", length=200, mode="determinate")
+        self.single_extract_progress.grid(row=2, column=0, columnspan=3, padx=5, pady=5, sticky="ew")
+
+        self.single_extract_log = tk.Text(self.single_extract_frame, height=10, width=60)
+        self.single_extract_log.grid(row=3, column=0, columnspan=3, padx=5, pady=5, sticky="ew")
+
+        self.single_extract_start_button = ttk.Button(self.single_extract_frame, text="Extract", command=self.extract_single_bdat)
+        self.single_extract_start_button.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
+
+        # Single Pack Section
+        self.single_pack_frame = ttk.LabelFrame(self.single_frame, text="Pack Single JSON to BDAT")
+        self.single_pack_frame.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
+
+        self.single_pack_label = ttk.Label(self.single_pack_frame, text="Path to JSON directory:")
+        self.single_pack_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+        self.single_pack_path = tk.StringVar()
+        self.single_pack_entry = ttk.Entry(self.single_pack_frame, textvariable=self.single_pack_path, width=50)
+        self.single_pack_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        self.single_pack_button = ttk.Button(self.single_pack_frame, text="Browse", command=self.browse_single_pack_input)
+        self.single_pack_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+
+        self.single_pack_output_label = ttk.Label(self.single_pack_frame, text="Path to output BDAT file:")
+        self.single_pack_output_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+        self.single_pack_output_path = tk.StringVar()
+        self.single_pack_entry = ttk.Entry(self.single_pack_frame, textvariable=self.single_pack_output_path, width=50)
+        self.single_pack_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+
+        self.single_pack_button = ttk.Button(self.single_pack_frame, text="Browse", command=self.browse_single_pack_output)
+        self.single_pack_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+
+        self.single_pack_progress = ttk.Progressbar(self.single_pack_frame, orient="horizontal", length=200, mode="determinate")
+        self.single_pack_progress.grid(row=2, column=0, columnspan=3, padx=5, pady=5, sticky="ew")
+
+        self.single_pack_log = tk.Text(self.single_pack_frame, height=10, width=60)
+        self.single_pack_log.grid(row=3, column=0, columnspan=3, padx=5, pady=5, sticky="ew")
+
+        self.single_pack_start_button = ttk.Button(self.single_pack_frame, text="Pack", command=self.pack_single_bdat)
+        self.single_pack_start_button.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
+
         # Configure grid weights to make the UI resizable
         for i in range(3):
             self.extract_frame.columnconfigure(i, weight=1)
             self.pack_frame.columnconfigure(i, weight=1)
+            self.single_extract_frame.columnconfigure(i, weight=1)
+            self.single_pack_frame.columnconfigure(i, weight=1)
         self.extract_frame.rowconfigure(1, weight=1)
         self.pack_frame.rowconfigure(1, weight=1)
+        self.single_extract_frame.rowconfigure(1, weight=1)
+        self.single_pack_frame.rowconfigure(1, weight=1)
+        self.batch_frame.columnconfigure(0, weight=1)
+        self.batch_frame.rowconfigure(0, weight=1)
+        self.batch_frame.rowconfigure(1, weight=1)
+        self.single_frame.columnconfigure(0, weight=1)
+        self.single_frame.rowconfigure(0, weight=1)
+        self.single_frame.rowconfigure(1, weight=1)
         master.columnconfigure(0, weight=1)
         master.rowconfigure(0, weight=1)
-        master.rowconfigure(1, weight=1)
 
     def browse_extract_input(self):
         dirname = filedialog.askdirectory()
@@ -101,6 +188,22 @@ class BDATApp:
     def browse_pack_output(self):
         dirname = filedialog.askdirectory()
         self.pack_output_path.set(dirname)
+
+    def browse_single_extract_input(self):
+        filename = filedialog.askopenfilename(filetypes=[("BDAT files", "*.bdat")])
+        self.single_extract_path.set(filename)
+
+    def browse_single_extract_output(self):
+        dirname = filedialog.askdirectory()
+        self.single_extract_output_path.set(dirname)
+
+    def browse_single_pack_input(self):
+        dirname = filedialog.askdirectory()
+        self.single_pack_path.set(dirname)
+
+    def browse_single_pack_output(self):
+        filename = filedialog.asksaveasfilename(defaultextension=".bdat", filetypes=[("BDAT files", "*.bdat")])
+        self.single_pack_output_path.set(filename)
 
     def extract_bdat(self):
         bdat_dir = self.extract_path.get()
@@ -153,6 +256,52 @@ class BDATApp:
                 toolset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bdat-toolset.exe")
                 command = f"\"{toolset_path}\" pack \"{item_path}\" -o \"{output_dir}\" -f json"
                 self.run_command(command, self.pack_log, progress_bar, 1)
+
+    def extract_single_bdat(self):
+        bdat_file = self.single_extract_path.get()
+        if not bdat_file:
+            self.log_extract("Error: No BDAT file selected.")
+            return
+
+        output_dir = self.single_extract_output_path.get()
+        if not output_dir:
+            self.log_extract("Error: No output directory selected.")
+            return
+
+        self.single_extract_progress["maximum"] = 1
+        self.single_extract_progress["value"] = 0
+        threading.Thread(target=self._extract_single_bdat, args=(bdat_file, output_dir, self.single_extract_progress)).start()
+
+    def _extract_single_bdat(self, bdat_file, output_dir, progress_bar):
+        filename = os.path.basename(bdat_file)
+        file_name_without_extension = os.path.splitext(filename)[0]
+        output_path = os.path.join(output_dir, file_name_without_extension) # Use the filename without extension as the output directory name
+        os.makedirs(output_path, exist_ok=True)
+
+        toolset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bdat-toolset.exe")
+        command = f"\"{toolset_path}\" extract \"{bdat_file}\" -o \"{output_path}\" -f json --pretty"
+        self.run_command(command, self.single_extract_log, progress_bar, 1)
+
+    def pack_single_bdat(self):
+        json_dir = self.single_pack_path.get()
+        if not json_dir:
+            self.log_pack("Error: No JSON directory selected.")
+            return
+
+        output_file = self.single_pack_output_path.get()
+        if not output_file:
+            self.log_pack("Error: No output file selected.")
+            return
+
+        self.single_pack_progress["maximum"] = 1
+        self.single_pack_progress["value"] = 0
+
+        threading.Thread(target=self._pack_single_bdat, args=(json_dir, output_file, self.single_pack_progress)).start()
+
+    def _pack_single_bdat(self, json_dir, output_file, progress_bar):
+        toolset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bdat-toolset.exe")
+        command = f"\"{toolset_path}\" pack \"{json_dir}\" -o \"{output_file}\" -f json"
+        self.run_command(command, self.single_pack_log, progress_bar, 1)
 
     def run_command(self, command, log_window, progress_bar, progress_value):
         try:
