@@ -1,5 +1,5 @@
 <div align="center">
-# 🎮 BDAT GUI Tool
+# 🎮 Xenoblade BDAT GUI Tool
    
 *A graphical interface for Xenoblade's BDAT file operations*
 
