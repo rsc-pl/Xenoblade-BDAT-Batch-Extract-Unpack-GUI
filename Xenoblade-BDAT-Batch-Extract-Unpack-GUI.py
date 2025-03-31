@@ -4,11 +4,29 @@ from tkinter import filedialog
 import subprocess
 import os
 import threading
+import configparser
+from pathlib import Path
 
 class BDATApp:
     def __init__(self, master):
         self.master = master
         master.title("BDAT Conversion Toolset")
+        
+        # Create all StringVars first
+        self.extract_path = tk.StringVar()
+        self.extract_output_path = tk.StringVar()
+        self.pack_path = tk.StringVar()
+        self.pack_output_path = tk.StringVar()
+        self.single_extract_path = tk.StringVar()
+        self.single_extract_output_path = tk.StringVar()
+        self.single_pack_path = tk.StringVar()
+        self.single_pack_output_path = tk.StringVar()
+
+        # Config file setup - uses same name as script but with .ini extension
+        script_name = Path(__file__).stem
+        self.config_file = Path(__file__).parent / f"{script_name}.ini"
+        self.config = configparser.ConfigParser()
+        self.load_config()
 
         # Notebook for tabbed interface
         self.notebook = ttk.Notebook(master)
@@ -25,7 +43,6 @@ class BDATApp:
         self.extract_label = ttk.Label(self.extract_frame, text="Path to directory containing BDAT files:")
         self.extract_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        self.extract_path = tk.StringVar()
         self.extract_entry = ttk.Entry(self.extract_frame, textvariable=self.extract_path, width=50)
         self.extract_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
@@ -35,7 +52,6 @@ class BDATApp:
         self.extract_output_label = ttk.Label(self.extract_frame, text="Path to output directory:")
         self.extract_output_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        self.extract_output_path = tk.StringVar()
         self.extract_output_entry = ttk.Entry(self.extract_frame, textvariable=self.extract_output_path, width=50)
         self.extract_output_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
@@ -58,7 +74,6 @@ class BDATApp:
         self.pack_label = ttk.Label(self.pack_frame, text="Path to directory containing JSON files:")
         self.pack_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        self.pack_path = tk.StringVar()
         self.pack_entry = ttk.Entry(self.pack_frame, textvariable=self.pack_path, width=50)
         self.pack_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
@@ -68,7 +83,6 @@ class BDATApp:
         self.pack_output_label = ttk.Label(self.pack_frame, text="Path to output BDAT file:")
         self.pack_output_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        self.pack_output_path = tk.StringVar()
         self.pack_output_entry = ttk.Entry(self.pack_frame, textvariable=self.pack_output_path, width=50)
         self.pack_output_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
@@ -95,7 +109,6 @@ class BDATApp:
         self.single_extract_label = ttk.Label(self.single_extract_frame, text="Path to BDAT file:")
         self.single_extract_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        self.single_extract_path = tk.StringVar()
         self.single_extract_entry = ttk.Entry(self.single_extract_frame, textvariable=self.single_extract_path, width=50)
         self.single_extract_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
@@ -105,7 +118,6 @@ class BDATApp:
         self.single_extract_output_label = ttk.Label(self.single_extract_frame, text="Path to output directory:")
         self.single_extract_output_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        self.single_extract_output_path = tk.StringVar()
         self.single_extract_output_entry = ttk.Entry(self.single_extract_frame, textvariable=self.single_extract_output_path, width=50)
         self.single_extract_output_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
@@ -128,7 +140,6 @@ class BDATApp:
         self.single_pack_label = ttk.Label(self.single_pack_frame, text="Path to JSON directory:")
         self.single_pack_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        self.single_pack_path = tk.StringVar()
         self.single_pack_entry = ttk.Entry(self.single_pack_frame, textvariable=self.single_pack_path, width=50)
         self.single_pack_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
@@ -138,7 +149,6 @@ class BDATApp:
         self.single_pack_output_label = ttk.Label(self.single_pack_frame, text="Path to output BDAT file:")
         self.single_pack_output_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        self.single_pack_output_path = tk.StringVar()
         self.single_pack_entry = ttk.Entry(self.single_pack_frame, textvariable=self.single_pack_output_path, width=50)
         self.single_pack_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
@@ -174,36 +184,67 @@ class BDATApp:
         master.rowconfigure(0, weight=1)
 
     def browse_extract_input(self):
-        dirname = filedialog.askdirectory()
-        self.extract_path.set(dirname)
+        initialdir = self.extract_path.get() or self.config.get('DEFAULT', 'extract_path', fallback='')
+        dirname = filedialog.askdirectory(initialdir=initialdir)
+        if dirname:
+            self.extract_path.set(dirname)
+            self.save_config()
 
     def browse_extract_output(self):
-        dirname = filedialog.askdirectory()
-        self.extract_output_path.set(dirname)
+        initialdir = self.extract_output_path.get() or self.config.get('DEFAULT', 'extract_output_path', fallback='')
+        dirname = filedialog.askdirectory(initialdir=initialdir)
+        if dirname:
+            self.extract_output_path.set(dirname)
+            self.save_config()
 
     def browse_pack_input(self):
-        dirname = filedialog.askdirectory()
-        self.pack_path.set(dirname)
+        initialdir = self.pack_path.get() or self.config.get('DEFAULT', 'pack_path', fallback='')
+        dirname = filedialog.askdirectory(initialdir=initialdir)
+        if dirname:
+            self.pack_path.set(dirname)
+            self.save_config()
 
     def browse_pack_output(self):
-        dirname = filedialog.askdirectory()
-        self.pack_output_path.set(dirname)
+        initialdir = self.pack_output_path.get() or self.config.get('DEFAULT', 'pack_output_path', fallback='')
+        dirname = filedialog.askdirectory(initialdir=initialdir)
+        if dirname:
+            self.pack_output_path.set(dirname)
+            self.save_config()
 
     def browse_single_extract_input(self):
-        filename = filedialog.askopenfilename(filetypes=[("BDAT files", "*.bdat")])
-        self.single_extract_path.set(filename)
+        initialdir = self.single_extract_path.get() or self.config.get('DEFAULT', 'single_extract_path', fallback='')
+        filename = filedialog.askopenfilename(
+            filetypes=[("BDAT files", "*.bdat")],
+            initialdir=os.path.dirname(initialdir) if initialdir else None
+        )
+        if filename:
+            self.single_extract_path.set(filename)
+            self.save_config()
 
     def browse_single_extract_output(self):
-        dirname = filedialog.askdirectory()
-        self.single_extract_output_path.set(dirname)
+        initialdir = self.single_extract_output_path.get() or self.config.get('DEFAULT', 'single_extract_output_path', fallback='')
+        dirname = filedialog.askdirectory(initialdir=initialdir)
+        if dirname:
+            self.single_extract_output_path.set(dirname)
+            self.save_config()
 
     def browse_single_pack_input(self):
-        dirname = filedialog.askdirectory()
-        self.single_pack_path.set(dirname)
+        initialdir = self.single_pack_path.get() or self.config.get('DEFAULT', 'single_pack_path', fallback='')
+        dirname = filedialog.askdirectory(initialdir=initialdir)
+        if dirname:
+            self.single_pack_path.set(dirname)
+            self.save_config()
 
     def browse_single_pack_output(self):
-        filename = filedialog.asksaveasfilename(defaultextension=".bdat", filetypes=[("BDAT files", "*.bdat")])
-        self.single_pack_output_path.set(filename)
+        initialdir = self.single_pack_output_path.get() or self.config.get('DEFAULT', 'single_pack_output_path', fallback='')
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".bdat",
+            filetypes=[("BDAT files", "*.bdat")],
+            initialdir=os.path.dirname(initialdir) if initialdir else None
+        )
+        if filename:
+            self.single_pack_output_path.set(filename)
+            self.save_config()
 
     def extract_bdat(self):
         bdat_dir = self.extract_path.get()
@@ -339,6 +380,33 @@ class BDATApp:
     def log_pack(self, message):
         self.pack_log.insert(tk.END, message + "\n")
         self.pack_log.see(tk.END)
+
+    def load_config(self):
+        if self.config_file.exists():
+            self.config.read(self.config_file)
+            if 'DEFAULT' in self.config:
+                self.extract_path.set(self.config['DEFAULT'].get('extract_path', ''))
+                self.extract_output_path.set(self.config['DEFAULT'].get('extract_output_path', ''))
+                self.pack_path.set(self.config['DEFAULT'].get('pack_path', ''))
+                self.pack_output_path.set(self.config['DEFAULT'].get('pack_output_path', ''))
+                self.single_extract_path.set(self.config['DEFAULT'].get('single_extract_path', ''))
+                self.single_extract_output_path.set(self.config['DEFAULT'].get('single_extract_output_path', ''))
+                self.single_pack_path.set(self.config['DEFAULT'].get('single_pack_path', ''))
+                self.single_pack_output_path.set(self.config['DEFAULT'].get('single_pack_output_path', ''))
+
+    def save_config(self):
+        self.config['DEFAULT'] = {
+            'extract_path': self.extract_path.get(),
+            'extract_output_path': self.extract_output_path.get(),
+            'pack_path': self.pack_path.get(),
+            'pack_output_path': self.pack_output_path.get(),
+            'single_extract_path': self.single_extract_path.get(),
+            'single_extract_output_path': self.single_extract_output_path.get(),
+            'single_pack_path': self.single_pack_path.get(),
+            'single_pack_output_path': self.single_pack_output_path.get()
+        }
+        with open(self.config_file, 'w') as configfile:
+            self.config.write(configfile)
 
 root = tk.Tk()
 app = BDATApp(root)
